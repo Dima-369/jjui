@@ -80,6 +80,39 @@ func (t *CommandRunner) RunInteractiveCommand(args []string, continuation tea.Cm
 	return t.RunCommand(args, continuation)
 }
 
+func (t *CommandRunner) RunShellCommandImmediate(shellCmd string) ([]byte, error) {
+	const shellKey = "_shell_"
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	expectations, ok := t.expectations[shellKey]
+	if !ok || len(expectations) == 0 {
+		assert.Fail(t, "unexpected shell command", shellCmd)
+	}
+
+	for _, e := range expectations {
+		if e.args[0] == shellCmd {
+			e.called = true
+			return e.output, e.err
+		}
+	}
+	assert.Fail(t, "unexpected shell command", shellCmd)
+	return nil, nil
+}
+
+func (t *CommandRunner) RunShellCommand(shellCmd string, continuations ...tea.Cmd) tea.Cmd {
+	cmds := make([]tea.Cmd, 0)
+	cmds = append(cmds, func() tea.Msg {
+		output, err := t.RunShellCommandImmediate(shellCmd)
+		return common.CommandCompletedMsg{Output: string(output), Err: err}
+	})
+	cmds = append(cmds, continuations...)
+	return tea.Batch(
+		func() tea.Msg { return common.CommandRunningMsg(shellCmd) },
+		tea.Sequence(cmds...),
+	)
+}
+
 func (t *CommandRunner) Expect(args []string) *ExpectedCommand {
 	subCommand := args[0]
 	if _, ok := t.expectations[subCommand]; !ok {
@@ -92,11 +125,27 @@ func (t *CommandRunner) Expect(args []string) *ExpectedCommand {
 	return e
 }
 
+func (t *CommandRunner) ExpectShell(shellCmd string) *ExpectedCommand {
+	const shellKey = "_shell_"
+	if _, ok := t.expectations[shellKey]; !ok {
+		t.expectations[shellKey] = make([]*ExpectedCommand, 0)
+	}
+	e := &ExpectedCommand{
+		args: []string{shellCmd},
+	}
+	t.expectations[shellKey] = append(t.expectations[shellKey], e)
+	return e
+}
+
 func (t *CommandRunner) Verify() {
 	for subCommand, subCommandExpectations := range t.expectations {
 		for _, e := range subCommandExpectations {
 			if !e.called {
-				assert.Fail(t, "expected command not called", subCommand)
+				if subCommand == "_shell_" {
+					assert.Fail(t, "expected shell command not called", e.args[0])
+				} else {
+					assert.Fail(t, "expected command not called", subCommand)
+				}
 			}
 		}
 	}

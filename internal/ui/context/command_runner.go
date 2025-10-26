@@ -20,6 +20,8 @@ type CommandRunner interface {
 	RunCommandStreaming(ctx context.Context, args []string) (*StreamingCommand, error)
 	RunCommand(args []string, continuations ...tea.Cmd) tea.Cmd
 	RunInteractiveCommand(args []string, continuation tea.Cmd) tea.Cmd
+	RunShellCommandImmediate(shellCmd string) ([]byte, error)
+	RunShellCommand(shellCmd string, continuations ...tea.Cmd) tea.Cmd
 }
 
 type MainCommandRunner struct {
@@ -108,6 +110,52 @@ func (a *MainCommandRunner) RunInteractiveCommand(args []string, continuation te
 			})()
 		}),
 	)
+}
+
+func (a *MainCommandRunner) RunShellCommandImmediate(shellCmd string) ([]byte, error) {
+	program := os.Getenv("SHELL")
+	if program == "" {
+		program = "sh"
+	}
+	c := exec.Command(program, "-c", shellCmd)
+	c.Dir = a.Location
+	if output, err := c.Output(); err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
+			return nil, errors.New(string(exitError.Stderr))
+		}
+		return nil, err
+	} else {
+		return bytes.Trim(output, "\n"), nil
+	}
+}
+
+func (a *MainCommandRunner) RunShellCommand(shellCmd string, continuations ...tea.Cmd) tea.Cmd {
+	commands := make([]tea.Cmd, 0)
+	commands = append(commands,
+		func() tea.Msg {
+			program := os.Getenv("SHELL")
+			if program == "" {
+				program = "sh"
+			}
+			c := exec.Command(program, "-c", shellCmd)
+			c.Dir = a.Location
+			var output bytes.Buffer
+			c.Stderr = &output
+			_, err := c.Output()
+			if err != nil {
+				var exitError *exec.ExitError
+				if errors.As(err, &exitError) {
+					err = errors.New(output.String())
+				}
+			}
+			return common.CommandCompletedMsg{
+				Output: output.String(),
+				Err:    err,
+			}
+		})
+	commands = append(commands, continuations...)
+	return tea.Batch(func() tea.Msg { return common.CommandRunningMsg(shellCmd) }, tea.Sequence(commands...))
 }
 
 type StreamingCommand struct {

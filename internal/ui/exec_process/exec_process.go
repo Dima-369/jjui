@@ -11,7 +11,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/idursun/jjui/internal/jj"
 	"github.com/idursun/jjui/internal/ui/common"
-	"github.com/idursun/jjui/internal/ui/context"
 )
 
 func ExecMsgFromLine(prompt string, line string) common.ExecMsg {
@@ -30,13 +29,12 @@ func ExecMsgFromLine(prompt string, line string) common.ExecMsg {
 	}
 }
 
-func ExecLine(ctx *context.MainContext, msg common.ExecMsg) tea.Cmd {
-	replacements := ctx.CreateReplacements()
+func ExecLine(location string, replacements map[string]string, msg common.ExecMsg) tea.Cmd {
 	switch msg.Mode {
 	case common.ExecJJ:
 		args := strings.Fields(msg.Line)
 		args = jj.TemplatedArgs(args, replacements)
-		return execProgram("jj", args, ctx.Location, nil)
+		return execProgram("jj", args, location, nil)
 	case common.ExecShell:
 		// user input is run via `$SHELL -c` to support user specifying command lines
 		// that have pipes (eg, to a pager) or redirection.
@@ -45,7 +43,7 @@ func ExecLine(ctx *context.MainContext, msg common.ExecMsg) tea.Cmd {
 			program = "sh"
 		}
 		args := []string{"-c", msg.Line}
-		return execProgram(program, args, ctx.Location, replacements)
+		return execProgram(program, args, location, replacements)
 	}
 	return nil
 }
@@ -67,6 +65,13 @@ func execProgram(program string, args []string, location string, env map[string]
 		return common.RefreshMsg{}
 	})
 }
+
+// ExecProgram is an exported function to run external programs interactively.
+func ExecProgram(program string, args []string, location string, env map[string]string) tea.Cmd {
+	return execProgram(program, args, location, env)
+}
+
+
 
 type process struct {
 	program  string

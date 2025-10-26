@@ -211,7 +211,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case common.ExecMsg:
-		return m, exec_process.ExecLine(m.context, msg)
+		return m, exec_process.ExecLine(m.context.Location, m.context.CreateReplacements(), msg)
 	case common.ToggleHelpMsg:
 		if m.stacked == nil {
 			m.stacked = helppage.New(m.context)

@@ -59,6 +59,11 @@ func LoadCustomCommands(output string) (map[string]CustomCommand, error) {
 			cmd.Name = name
 			registry[name] = cmd
 		} else {
+			_, hasArgs := tempMap["args"]
+			_, hasShell := tempMap["shell"]
+			if hasArgs && hasShell {
+				return nil, fmt.Errorf("custom command '%s' cannot have both 'args' and 'shell'", name)
+			}
 			var cmd CustomRunCommand
 			if err := metadata.PrimitiveDecode(primitive, &cmd); err != nil {
 				return nil, fmt.Errorf("failed to decode run command %s: %w", name, err)

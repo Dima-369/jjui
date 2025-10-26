@@ -1,6 +1,13 @@
 # Fork changes
 
 - Add `always_use_external_editor` setting under `[editing]` section in `config.toml` to always use external editor. Default is false.
+- Allow `shell` support in `custom_commands` like:
+
+```
+[custom_commands]
+"copy git diff" = { shell = "jj diff --git | pbcopy", show = "diff" }
+"test" = { shell = "echo hi", show = "diff" }
+```
 
 ## My installation instructions
 
