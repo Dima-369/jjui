@@ -3,13 +3,26 @@
 - Add `always_use_external_editor` setting under `[editing]` section in `config.toml` to always use external editor. Default is false.
 - Allow `shell` support in `custom_commands` like:
 
-```
+```toml
 [custom_commands]
 "copy git diff" = { shell = "jj diff --git | pbcopy", show = "diff" }
 "test" = { shell = "echo hi", show = "diff" }
 ```
 
 - Add `copy_git_diff` custom command to copy the uncolored git diff to clipboard when in diff mode.
+- Allow to specify `[keys.diff_mode]` in `config.toml` to customize keybindings in diff mode. Set to this by default:
+
+```toml
+[keys.diff_mode]
+  up = ["up", "k"]
+  down = ["down", "j"]
+  page_up = ["pgup", "b"]
+  page_down = ["pgdown", "f", " "]
+  half_page_up = ["ctrl+u"]
+  half_page_down = ["ctrl+d"]
+  top = ["home", "g"]
+  bottom = ["end", "G"]
+```
 
 ## My installation instructions
 

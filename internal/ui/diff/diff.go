@@ -22,9 +22,8 @@ type Model struct {
 }
 
 func (m *Model) ShortHelp() []key.Binding {
-	vkm := m.view.KeyMap
 	return []key.Binding{
-		vkm.Up, vkm.Down, vkm.HalfPageDown, vkm.HalfPageUp, vkm.PageDown, vkm.PageUp,
+		m.keymap.DiffMode.Up, m.keymap.DiffMode.Down, m.keymap.DiffMode.HalfPageDown, m.keymap.DiffMode.HalfPageUp, m.keymap.DiffMode.PageDown, m.keymap.DiffMode.PageUp,
 		m.keymap.CopyGitDiff,
 		m.keymap.Cancel}
 }
@@ -67,6 +66,12 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 					return common.CommandCompletedMsg{Output: "Copied git diff to clipboard"}
 				}
 			}
+		case key.Matches(msg, m.keymap.DiffMode.Top):
+			m.view.GotoTop()
+			return m, nil
+		case key.Matches(msg, m.keymap.DiffMode.Bottom):
+			m.view.GotoBottom()
+			return m, nil
 		}
 	}
 	var cmd tea.Cmd
@@ -80,6 +85,15 @@ func (m *Model) View() string {
 
 func New(output string, width int, height int, ctx *context.MainContext, revision string) *Model {
 	view := viewport.New(width, height)
+	keymap := config.Current.GetKeyMap()
+
+	view.KeyMap.Up = keymap.DiffMode.Up
+	view.KeyMap.Down = keymap.DiffMode.Down
+	view.KeyMap.PageUp = keymap.DiffMode.PageUp
+	view.KeyMap.PageDown = keymap.DiffMode.PageDown
+	view.KeyMap.HalfPageUp = keymap.DiffMode.HalfPageUp
+	view.KeyMap.HalfPageDown = keymap.DiffMode.HalfPageDown
+
 	content := strings.ReplaceAll(output, "\r", "")
 	if content == "" {
 		content = "(empty)"
@@ -87,7 +101,7 @@ func New(output string, width int, height int, ctx *context.MainContext, revisio
 	view.SetContent(content)
 	return &Model{
 		view:     view,
-		keymap:   config.Current.GetKeyMap(),
+		keymap:   keymap,
 		output:   output,
 		context:  ctx,
 		revision: revision,

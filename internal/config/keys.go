@@ -130,6 +130,16 @@ func Convert(m KeyMappings[keys]) KeyMappings[key.Binding] {
 			Accept: key.NewBinding(key.WithKeys(m.FileSearch.Accept...), key.WithHelp(JoinKeys(m.FileSearch.Accept), "file revset")),
 			Edit:   key.NewBinding(key.WithKeys(m.FileSearch.Edit...), key.WithHelp(JoinKeys(m.FileSearch.Edit), "edit file")),
 		},
+		DiffMode: diffModeKeys[key.Binding]{
+			Up:           key.NewBinding(key.WithKeys(m.DiffMode.Up...), key.WithHelp(JoinKeys(m.DiffMode.Up), "up")),
+			Down:         key.NewBinding(key.WithKeys(m.DiffMode.Down...), key.WithHelp(JoinKeys(m.DiffMode.Down), "down")),
+			PageUp:       key.NewBinding(key.WithKeys(m.DiffMode.PageUp...), key.WithHelp(JoinKeys(m.DiffMode.PageUp), "page up")),
+			PageDown:     key.NewBinding(key.WithKeys(m.DiffMode.PageDown...), key.WithHelp(JoinKeys(m.DiffMode.PageDown), "page down")),
+			HalfPageUp:   key.NewBinding(key.WithKeys(m.DiffMode.HalfPageUp...), key.WithHelp(JoinKeys(m.DiffMode.HalfPageUp), "half page up")),
+			HalfPageDown: key.NewBinding(key.WithKeys(m.DiffMode.HalfPageDown...), key.WithHelp(JoinKeys(m.DiffMode.HalfPageDown), "half page down")),
+			Top:          key.NewBinding(key.WithKeys(m.DiffMode.Top...), key.WithHelp(JoinKeys(m.DiffMode.Top), "go to top")),
+			Bottom:       key.NewBinding(key.WithKeys(m.DiffMode.Bottom...), key.WithHelp(JoinKeys(m.DiffMode.Bottom), "go to bottom")),
+		},
 	}
 }
 
@@ -205,6 +215,7 @@ type KeyMappings[T any] struct {
 	Git               gitModeKeys[T]            `toml:"git"`
 	OpLog             opLogModeKeys[T]          `toml:"oplog"`
 	FileSearch        fileSearchKeys[T]         `toml:"file_search"`
+	DiffMode          diffModeKeys[T]           `toml:"diff_mode"`
 }
 
 type bookmarkModeKeys[T any] struct {
@@ -303,4 +314,15 @@ type fileSearchKeys[T any] struct {
 	Down   T `toml:"down"`
 	Accept T `toml:"accept"`
 	Edit   T `toml:"edit"`
+}
+
+type diffModeKeys[T any] struct {
+	Up           T `toml:"up"`
+	Down         T `toml:"down"`
+	PageUp       T `toml:"page_up"`
+	PageDown     T `toml:"page_down"`
+	HalfPageUp   T `toml:"half_page_up"`
+	HalfPageDown T `toml:"half_page_down"`
+	Top          T `toml:"top"`
+	Bottom       T `toml:"bottom"`
 }
