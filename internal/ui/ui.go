@@ -224,7 +224,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case common.ShowDiffMsg:
-		m.diff = diff.New(string(msg), m.Width, m.Height)
+		var selectedRevisionId string
+		if selectedRev := m.revisions.SelectedRevision(); selectedRev != nil {
+			selectedRevisionId = selectedRev.GetChangeId()
+		}
+		m.diff = diff.New(string(msg), m.Width, m.Height, m.context, selectedRevisionId)
 		return m, m.diff.Init()
 	case common.UpdateRevisionsSuccessMsg:
 		m.state = common.Ready

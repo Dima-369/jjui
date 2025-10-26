@@ -9,6 +9,8 @@
 "test" = { shell = "echo hi", show = "diff" }
 ```
 
+- Add `copy_git_diff` custom command to copy the uncolored git diff to clipboard when in diff mode.
+
 ## My installation instructions
 
 ```bash

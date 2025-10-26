@@ -126,6 +126,10 @@ func Diff(revision string, fileName string, extraArgs ...string) CommandArgs {
 	return args
 }
 
+func DiffGitUncolored(revision string) CommandArgs {
+	return []string{"diff", "--git", "--color", "never", "-r", revision, "--ignore-working-copy"}
+}
+
 func Restore(revision string, files []string) CommandArgs {
 	args := []string{"restore", "-c", revision}
 	var escapedFiles []string

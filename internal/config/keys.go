@@ -22,6 +22,7 @@ func Convert(m KeyMappings[keys]) KeyMappings[key.Binding] {
 		Refresh:           key.NewBinding(key.WithKeys(m.Refresh...), key.WithHelp(JoinKeys(m.Refresh), "refresh")),
 		Quit:              key.NewBinding(key.WithKeys(m.Quit...), key.WithHelp(JoinKeys(m.Quit), "quit")),
 		Diff:              key.NewBinding(key.WithKeys(m.Diff...), key.WithHelp(JoinKeys(m.Diff), "diff")),
+		CopyGitDiff:       key.NewBinding(key.WithKeys(m.CopyGitDiff...), key.WithHelp(JoinKeys(m.CopyGitDiff), "copy git diff")),
 		Describe:          key.NewBinding(key.WithKeys(m.Describe...), key.WithHelp(JoinKeys(m.Describe), "describe")),
 		Undo:              key.NewBinding(key.WithKeys(m.Undo...), key.WithHelp(JoinKeys(m.Undo), "undo")),
 		Redo:              key.NewBinding(key.WithKeys(m.Redo...), key.WithHelp(JoinKeys(m.Redo), "redo")),
@@ -170,6 +171,7 @@ type KeyMappings[T any] struct {
 	Refresh           T                         `toml:"refresh"`
 	Abandon           T                         `toml:"abandon"`
 	Diff              T                         `toml:"diff"`
+	CopyGitDiff       T                         `toml:"copy_git_diff"`
 	Quit              T                         `toml:"quit"`
 	Help              T                         `toml:"help"`
 	Describe          T                         `toml:"describe"`
