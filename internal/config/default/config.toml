@@ -119,6 +119,9 @@ limit = 0
     enabled = false
   [ui.colors]
 
+[editing]
+  always_use_external_editor = false
+
 [suggest]
   [suggest.exec]
     mode = "off"

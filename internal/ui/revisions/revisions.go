@@ -423,6 +423,10 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 				m.op = details.NewOperation(m.context, m.SelectedRevision(), m.Height)
 				return m, m.op.Init()
 			case key.Matches(msg, m.keymap.InlineDescribe.Mode):
+				if config.Current.Editing.AlwaysUseExternalEditor {
+					selection := jj.NewSelectedRevisions(m.SelectedRevision())
+					return m, m.context.RunInteractiveCommand(jj.Describe(selection), common.Refresh)
+				}
 				m.op = describe.NewOperation(m.context, m.SelectedRevision().GetChangeId(), m.Width)
 				return m, m.op.Init()
 			case key.Matches(msg, m.keymap.New):

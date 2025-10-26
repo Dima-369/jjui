@@ -1,3 +1,9 @@
+# Fork changes
+
+- Add `always_use_external_editor` setting under `[editing]` section in `config.toml` to always use external editor. Default is false.
+
+# Original README
+
 [![Build & Test](https://github.com/idursun/jjui/actions/workflows/go.yml/badge.svg)](https://github.com/idursun/jjui/actions/workflows/go.yml)
 
 # Jujutsu UI

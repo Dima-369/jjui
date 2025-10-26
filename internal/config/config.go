@@ -18,6 +18,7 @@ var Current = loadDefaultConfig()
 type Config struct {
 	Keys      KeyMappings[keys] `toml:"keys"`
 	UI        UIConfig          `toml:"ui"`
+	Editing   EditingConfig     `toml:"editing"`
 	Suggest   SuggestConfig     `toml:"suggest"`
 	Revisions RevisionsConfig   `toml:"revisions"`
 	Preview   PreviewConfig     `toml:"preview"`
@@ -127,6 +128,10 @@ type UIConfig struct {
 	// once we have a mechanism to deprecate the old name softly.
 	AutoRefreshInterval int          `toml:"auto_refresh_interval"`
 	Tracer              TracerConfig `toml:"tracer"`
+}
+
+type EditingConfig struct {
+	AlwaysUseExternalEditor bool `toml:"always_use_external_editor"`
 }
 
 type RevisionsConfig struct {
