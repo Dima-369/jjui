@@ -118,6 +118,8 @@ func (s *Operation) internalUpdate(msg tea.Msg) (*Operation, tea.Cmd) {
 			return s, nil
 		case key.Matches(msg, s.keyMap.Cancel), key.Matches(msg, s.keyMap.Details.Close):
 			return s, common.Close
+		case key.Matches(msg, s.keyMap.Refresh):
+			return s, common.Refresh
 		case key.Matches(msg, s.keyMap.Details.Diff):
 			selected := s.current()
 			if selected == nil {
