@@ -25,6 +25,10 @@
   bottom = ["end", "G"]
 ```
 
+## Notes
+
+Use `escape` to dismiss error notifications.
+
 ## My installation instructions
 
 ```bash
