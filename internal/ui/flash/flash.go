@@ -56,7 +56,10 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		}
 		return m, nil
 	case common.UpdateRevisionsFailedMsg:
-		m.add(msg.Output, msg.Err)
+		id := m.add(msg.Output, msg.Err)
+		return m, tea.Tick(expiringMessageTimeout, func(t time.Time) tea.Msg {
+			return expireMessageMsg{id: id}
+		})
 	}
 	return m, nil
 }

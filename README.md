@@ -1,5 +1,6 @@
 # Fork changes
 
+- Add `common.UpdateRevisionsFailedMsg` error notification timeout, otherwise they stay forever.
 - Add `always_use_external_editor` setting under `[editing]` section in `config.toml` to always use external editor. Default is false.
 - Allow `shell` support in `custom_commands` like:
 
