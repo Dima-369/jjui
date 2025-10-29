@@ -158,4 +158,4 @@ limit = 0
 
 [git]
   default_remote = "origin"
-	auto-local-bookmark = true
+	auto_local_bookmark = true
