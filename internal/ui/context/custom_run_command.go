@@ -1,8 +1,11 @@
 package context
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"slices"
 	"strings"
 
@@ -19,6 +22,44 @@ type CustomRunCommand struct {
 	Shell string            `toml:"shell"`
 	Show  config.ShowOption `toml:"show"`
 }
+
+// capturingProcess implements tea.ExecCommand to run an interactive command
+// while capturing its stdout and stderr.
+type capturingProcess struct {
+	program  string
+	args     []string
+	location string
+	env      map[string]string
+
+	stdin  io.Reader
+	stdout io.Writer
+	stderr io.Writer
+
+	outBuf bytes.Buffer
+	errBuf bytes.Buffer
+}
+
+func (p *capturingProcess) Run() error {
+	cmd := exec.Command(p.program, p.args...)
+	cmd.Dir = p.location
+	cmd.Stdin = p.stdin
+
+	cmd.Stdout = io.MultiWriter(p.stdout, &p.outBuf)
+	cmd.Stderr = io.MultiWriter(p.stderr, &p.errBuf)
+
+	var env []string
+	for k, v := range p.env {
+		name := strings.TrimPrefix(k, "$")
+		env = append(env, name+"="+v)
+	}
+	cmd.Env = append(os.Environ(), env...)
+
+	return cmd.Run()
+}
+
+func (p *capturingProcess) SetStdin(r io.Reader)  { p.stdin = r }
+func (p *capturingProcess) SetStdout(w io.Writer) { p.stdout = w }
+func (p *capturingProcess) SetStderr(w io.Writer) { p.stderr = w }
 
 func (c CustomRunCommand) IsApplicableTo(item SelectedItem) bool {
 	var checkSource []string
@@ -84,6 +125,44 @@ func (c CustomRunCommand) Prepare(ctx *MainContext) tea.Cmd {
 			}
 			args := []string{"-c", shellCmd}
 			return exec_process.ExecProgram(program, args, ctx.Location, replacements)
+		case config.ShowOptionInteractiveNotification:
+			program := os.Getenv("SHELL")
+			if len(program) == 0 {
+				program = "sh"
+			}
+
+			p := &capturingProcess{
+				program:  program,
+				args:     []string{"-c", shellCmd},
+				location: ctx.Location,
+				env:      replacements,
+			}
+
+			return tea.Batch(
+				func() tea.Msg { return common.CommandRunningMsg(shellCmd) },
+				tea.Exec(p, func(err error) tea.Msg {
+					output := strings.TrimSpace(p.outBuf.String())
+					errOutput := strings.TrimSpace(p.errBuf.String())
+
+					finalOutput := output
+					if finalOutput == "" {
+						finalOutput = errOutput
+					} else if errOutput != "" {
+						finalOutput += "\n" + errOutput
+					}
+
+					if err != nil {
+						return common.CommandCompletedMsg{Output: finalOutput, Err: err}
+					}
+
+					if finalOutput == "" {
+						finalOutput = fmt.Sprintf("'%s' completed", shellCmd)
+					}
+					return common.CommandCompletedMsg{Output: finalOutput, Err: nil}
+				}),
+			)
+		case config.ShowOptionNotification:
+			return ctx.RunShellCommand(shellCmd)
 		default:
 			return ctx.RunShellCommand(shellCmd, common.Refresh)
 		}
@@ -96,6 +175,38 @@ func (c CustomRunCommand) Prepare(ctx *MainContext) tea.Cmd {
 		}
 	case config.ShowOptionInteractive:
 		return ctx.RunInteractiveCommand(jj.TemplatedArgs(c.Args, replacements), common.Refresh)
+	case config.ShowOptionInteractiveNotification:
+		args := jj.TemplatedArgs(c.Args, replacements)
+		p := &capturingProcess{
+			program:  "jj",
+			args:     args,
+			location: ctx.Location,
+			env:      replacements,
+		}
+		return tea.Batch(
+			common.CommandRunning(args),
+			tea.Exec(p, func(err error) tea.Msg {
+				output := strings.TrimSpace(p.outBuf.String())
+				errOutput := strings.TrimSpace(p.errBuf.String())
+
+				finalOutput := output
+				if finalOutput == "" {
+					finalOutput = errOutput
+				} else if errOutput != "" {
+					finalOutput += "\n" + errOutput
+				}
+
+				if err != nil {
+					return common.CommandCompletedMsg{Output: finalOutput, Err: err}
+				}
+				if finalOutput == "" {
+					finalOutput = fmt.Sprintf("'jj %s' completed", strings.Join(args, " "))
+				}
+				return common.CommandCompletedMsg{Output: finalOutput, Err: nil}
+			}),
+		)
+	case config.ShowOptionNotification:
+		return ctx.RunCommand(jj.TemplatedArgs(c.Args, replacements))
 	default:
 		return ctx.RunCommand(jj.TemplatedArgs(c.Args, replacements), common.Refresh)
 	}

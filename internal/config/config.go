@@ -182,19 +182,23 @@ type GraphConfig struct {
 type ShowOption string
 
 const (
-	ShowOptionDiff        ShowOption = "diff"
-	ShowOptionInteractive ShowOption = "interactive"
+	ShowOptionDiff                   ShowOption = "diff"
+	ShowOptionInteractive            ShowOption = "interactive"
+	ShowOptionNotification           ShowOption = "notification"
+	ShowOptionInteractiveNotification ShowOption = "interactive_notification"
 )
 
 func (s *ShowOption) UnmarshalText(text []byte) error {
 	val := string(text)
 	switch val {
 	case string(ShowOptionDiff),
-		string(ShowOptionInteractive):
+		string(ShowOptionInteractive),
+		string(ShowOptionNotification),
+		string(ShowOptionInteractiveNotification):
 		*s = ShowOption(val)
 		return nil
 	default:
-		return fmt.Errorf("invalid value for 'show': %q. Allowed: none, interactive and diff", val)
+		return fmt.Errorf("invalid value for 'show': %q. Allowed: interactive, diff, notification and interactive_notification", val)
 	}
 }
 
