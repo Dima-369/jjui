@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -51,7 +52,8 @@ type Model struct {
 type triggerAutoRefreshMsg struct{}
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(tea.SetWindowTitle(fmt.Sprintf("jjui - %s", m.context.Location)), m.revisions.Init(), m.scheduleAutoRefresh())
+	dirName := filepath.Base(m.context.Location)
+	return tea.Batch(tea.SetWindowTitle(fmt.Sprintf("jjui - %s", dirName)), m.revisions.Init(), m.scheduleAutoRefresh())
 }
 
 func (m Model) handleFocusInputMessage(msg tea.Msg) (tea.Model, tea.Cmd, bool) {

@@ -1,5 +1,6 @@
 # Fork changes
 
+- Change terminal tab title to `jjui - {last dir name}` instead of showing full path.
 - Add `always_use_external_editor` setting under `[editing]` section in `config.toml` to always use external editor. Default is false.
 - Allow `shell` support in `custom_commands` like:
 
