@@ -1,6 +1,7 @@
 package customcommands
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -18,6 +19,7 @@ type item struct {
 	desc    string
 	command tea.Cmd
 	key     key.Binding
+	order   int
 }
 
 func (i item) ShortCut() string {
@@ -116,9 +118,25 @@ func NewModel(ctx *context.MainContext, width int, height int) *Model {
 	for name, command := range ctx.CustomCommands {
 		if command.IsApplicableTo(ctx.SelectedItem) {
 			cmd := command.Prepare(ctx)
-			items = append(items, item{name: name, desc: command.Description(ctx), command: cmd, key: command.Binding()})
+			items = append(items, item{name: name, desc: command.Description(ctx), command: cmd, key: command.Binding(), order: command.Order()})
 		}
 	}
+
+	// Sort items by order field, with alphabetical fallback for same order
+	slices.SortFunc(items, func(a, b list.Item) int {
+		itemA := a.(item)
+		itemB := b.(item)
+		
+		if itemA.order < itemB.order {
+			return -1
+		}
+		if itemA.order > itemB.order {
+			return 1
+		}
+		// Fallback to alphabetical sort if order is the same
+		return strings.Compare(itemA.name, itemB.name)
+	})
+
 	keyMap := config.Current.GetKeyMap()
 	menu := menu.NewMenu(items, width, height, keyMap, menu.WithStylePrefix("custom_commands"))
 	menu.Title = "Custom Commands"

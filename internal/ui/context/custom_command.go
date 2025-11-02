@@ -11,14 +11,16 @@ import (
 
 type CustomCommand interface {
 	Binding() key.Binding
+	Order() int
 	Description(ctx *MainContext) string
 	Prepare(ctx *MainContext) tea.Cmd
 	IsApplicableTo(item SelectedItem) bool
 }
 
 type CustomCommandBase struct {
-	Name string
-	Key  []string `toml:"key"`
+	Name     string
+	Key      []string `toml:"key"`
+	OrderVal int      `toml:"order"`
 }
 
 func (c CustomCommandBase) Binding() key.Binding {
@@ -27,6 +29,10 @@ func (c CustomCommandBase) Binding() key.Binding {
 		key.WithKeys(c.Key...),
 		key.WithHelp(keys, c.Name),
 	)
+}
+
+func (c CustomCommandBase) Order() int {
+	return c.OrderVal
 }
 
 func LoadCustomCommands(output string) (map[string]CustomCommand, error) {

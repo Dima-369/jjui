@@ -9,6 +9,7 @@
 "test" = { shell = "echo hi", show = "diff" }
 ```
 
+- Add `order` support to `custom_commands`. Lower number means to shop at top of custom commands dialog.
 - Add `copy_git_diff` custom command to copy the uncolored git diff to clipboard when in diff mode.
 - Allow to specify `[keys.diff_mode]` in `config.toml` to customize keybindings in diff mode. Set to this by default:
 
