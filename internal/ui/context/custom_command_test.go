@@ -14,10 +14,11 @@ func TestLoad_CustomCommands(t *testing.T) {
 "restore evolog" = { key = ["ctrl+e"],  args = ["op", "restore", "-r", "$revision"] }
 "resolve vscode" = { key = ["ctrl+r"],  args = ["resolve", "--tool", "vscode"], show = "interactive" }
 "update revset" = { key = ["M"],  revset = "::$change_id" }
+"refreshing cmd" = { shell = "echo hi", show = "interactive_notification", refresh = true }
 `
 	registry, err := LoadCustomCommands(content)
 	assert.NoError(t, err)
-	assert.Len(t, registry, 4)
+	assert.Len(t, registry, 5)
 
 	testCases := []struct {
 		name        string
@@ -69,6 +70,18 @@ func TestLoad_CustomCommands(t *testing.T) {
 				assert.Equal(t, []string{"M"}, revsetCmd.Key)
 				assert.Equal(t, "::$change_id", revsetCmd.Revset)
 				assert.Equal(t, "update revset", revsetCmd.Name)
+			},
+		},
+		{
+			name:        "refreshing command",
+			commandName: "refreshing cmd",
+			testFunc: func(t *testing.T, cmd CustomCommand) {
+				runCmd, ok := cmd.(CustomRunCommand)
+				assert.True(t, ok, "Command should be CustomRunCommand")
+				assert.Equal(t, "echo hi", runCmd.Shell)
+				assert.Equal(t, config.ShowOptionInteractiveNotification, runCmd.Show)
+				assert.True(t, runCmd.Refresh)
+				assert.Equal(t, "refreshing cmd", runCmd.Name)
 			},
 		},
 	}

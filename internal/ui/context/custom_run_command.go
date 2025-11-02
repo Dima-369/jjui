@@ -18,9 +18,10 @@ import (
 
 type CustomRunCommand struct {
 	CustomCommandBase
-	Args  []string          `toml:"args"`
-	Shell string            `toml:"shell"`
-	Show  config.ShowOption `toml:"show"`
+	Args    []string          `toml:"args"`
+	Shell   string            `toml:"shell"`
+	Show    config.ShowOption `toml:"show"`
+	Refresh bool              `toml:"refresh"`
 }
 
 // capturingProcess implements tea.ExecCommand to run an interactive command
@@ -151,18 +152,31 @@ func (c CustomRunCommand) Prepare(ctx *MainContext) tea.Cmd {
 						finalOutput += "\n" + errOutput
 					}
 
+					var completionMsg tea.Msg = common.CommandCompletedMsg{Output: finalOutput, Err: err}
 					if err != nil {
-						return common.CommandCompletedMsg{Output: finalOutput, Err: err}
+						return completionMsg
 					}
 
 					if finalOutput == "" {
 						finalOutput = fmt.Sprintf("'%s' completed", shellCmd)
 					}
-					return common.CommandCompletedMsg{Output: finalOutput, Err: nil}
+					completionMsg = common.CommandCompletedMsg{Output: finalOutput, Err: nil}
+
+					if c.Refresh {
+						return tea.Batch(
+							func() tea.Msg { return completionMsg },
+							func() tea.Msg { return common.Refresh() },
+						)()
+					}
+					return completionMsg
 				}),
 			)
 		case config.ShowOptionNotification:
-			return ctx.RunShellCommand(shellCmd)
+			var continuations []tea.Cmd
+			if c.Refresh {
+				continuations = append(continuations, func() tea.Msg { return common.Refresh() })
+			}
+			return ctx.RunShellCommand(shellCmd, continuations...)
 		default:
 			return ctx.RunShellCommand(shellCmd, common.Refresh)
 		}
@@ -196,17 +210,29 @@ func (c CustomRunCommand) Prepare(ctx *MainContext) tea.Cmd {
 					finalOutput += "\n" + errOutput
 				}
 
+				var completionMsg tea.Msg = common.CommandCompletedMsg{Output: finalOutput, Err: err}
 				if err != nil {
-					return common.CommandCompletedMsg{Output: finalOutput, Err: err}
+					return completionMsg
 				}
 				if finalOutput == "" {
 					finalOutput = fmt.Sprintf("'jj %s' completed", strings.Join(args, " "))
 				}
-				return common.CommandCompletedMsg{Output: finalOutput, Err: nil}
+				completionMsg = common.CommandCompletedMsg{Output: finalOutput, Err: nil}
+				if c.Refresh {
+					return tea.Batch(
+						func() tea.Msg { return completionMsg },
+						func() tea.Msg { return common.Refresh() },
+					)()
+				}
+				return completionMsg
 			}),
 		)
 	case config.ShowOptionNotification:
-		return ctx.RunCommand(jj.TemplatedArgs(c.Args, replacements))
+		var continuations []tea.Cmd
+		if c.Refresh {
+			continuations = append(continuations, func() tea.Msg { return common.Refresh() })
+		}
+		return ctx.RunCommand(jj.TemplatedArgs(c.Args, replacements), continuations...)
 	default:
 		return ctx.RunCommand(jj.TemplatedArgs(c.Args, replacements), common.Refresh)
 	}
