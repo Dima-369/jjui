@@ -330,6 +330,12 @@ func registerAPI(L *lua.LState, runner *Runner) {
 		msg := L.CheckString(1)
 		return yieldStep(L, step{cmd: intents.Invoke(intents.AddMessage{Text: msg})})
 	})
+	
+	flashErrorFn := L.NewFunction(func(L *lua.LState) int {
+		msg := L.CheckString(1)
+		errMsg := fmt.Errorf("%s", msg)
+		return yieldStep(L, step{cmd: intents.Invoke(intents.AddMessage{Text: msg, Err: errMsg})})
+	})
 	copyToClipboardFn := L.NewFunction(func(L *lua.LState) int {
 		text := L.CheckString(1)
 		if err := clipboard.WriteAll(text); err != nil {
@@ -417,6 +423,7 @@ func registerAPI(L *lua.LState, runner *Runner) {
 	root.RawSetString("jj_interactive", jjInteractiveFn)
 	root.RawSetString("jj", jjFn)
 	root.RawSetString("flash", flashFn)
+	root.RawSetString("flash_error", flashErrorFn)
 	root.RawSetString("copy_to_clipboard", copyToClipboardFn)
 	root.RawSetString("exec_shell", execShellFn)
 	root.RawSetString("split_lines", splitLinesFn)
@@ -432,6 +439,7 @@ func registerAPI(L *lua.LState, runner *Runner) {
 	L.SetGlobal("jj_interactive", jjInteractiveFn)
 	L.SetGlobal("jj", jjFn)
 	L.SetGlobal("flash", flashFn)
+	L.SetGlobal("flash_error", flashErrorFn)
 	L.SetGlobal("copy_to_clipboard", copyToClipboardFn)
 	L.SetGlobal("exec_shell", execShellFn)
 	L.SetGlobal("split_lines", splitLinesFn)
