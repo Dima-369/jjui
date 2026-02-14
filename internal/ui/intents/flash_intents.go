@@ -1,9 +1,9 @@
 package intents
 
 type AddMessage struct {
-	Text      string
-	Err       error
-	NoTimeout bool
+	Text   string
+	Err    error
+	Sticky bool
 }
 
 func (AddMessage) isIntent() {}

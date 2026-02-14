@@ -327,8 +327,19 @@ func registerAPI(L *lua.LState, runner *Runner) {
 		return 2
 	})
 	flashFn := L.NewFunction(func(L *lua.LState) int {
-		msg := L.CheckString(1)
-		return yieldStep(L, step{cmd: intents.Invoke(intents.AddMessage{Text: msg})})
+		intent := intents.AddMessage{}
+		switch v := L.Get(1).(type) {
+		case *lua.LTable:
+			payload := luaTableToMap(v)
+			intent.Text = stringVal(payload, "text")
+			if boolVal(payload, "error") {
+				intent.Err = fmt.Errorf("%s", intent.Text)
+			}
+			intent.Sticky = boolVal(payload, "sticky")
+		default:
+			intent.Text = L.CheckString(1)
+		}
+		return yieldStep(L, step{cmd: intents.Invoke(intent)})
 	})
 	
 	flashErrorFn := L.NewFunction(func(L *lua.LState) int {

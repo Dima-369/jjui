@@ -79,7 +79,7 @@ func (m *Model) handleIntent(intent intents.Intent) tea.Cmd {
 	switch intent := intent.(type) {
 	case intents.AddMessage:
 		id := m.add(intent.Text, intent.Err)
-		if intent.Err == nil && !intent.NoTimeout && id != 0 {
+		if intent.Err == nil && !intent.Sticky && id != 0 {
 			expiringMessageTimeout := config.GetExpiringFlashMessageTimeout(config.Current)
 			if expiringMessageTimeout > time.Duration(0) {
 				return tea.Tick(expiringMessageTimeout, func(t time.Time) tea.Msg {
