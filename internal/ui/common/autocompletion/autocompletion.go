@@ -114,6 +114,10 @@ func (ac *AutoCompletionInput) CursorEnd() {
 	ac.TextInput.CursorEnd()
 }
 
+func (ac *AutoCompletionInput) SetCursor(pos int) {
+	ac.TextInput.SetCursor(pos)
+}
+
 func (ac *AutoCompletionInput) Update(msg tea.Msg) tea.Cmd {
 	prevValue := ac.TextInput.Value()
 

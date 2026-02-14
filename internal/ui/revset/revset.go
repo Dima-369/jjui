@@ -275,7 +275,7 @@ func (m *Model) selectCompletionItem(item CompletionItem) {
 	newValue := m.applyCompletion(m.userInput, item)
 
 	m.autoComplete.SetValue(newValue)
-	m.autoComplete.CursorEnd()
+	m.positionCursorForCompletion(newValue, item)
 	// Commit the completion: update userInput and re-filter
 	m.userInput = newValue
 	m.selectedIndex = -1
@@ -300,7 +300,7 @@ func (m *Model) updatePreview() {
 	previewValue := m.applyCompletion(m.userInput, item)
 
 	m.autoComplete.SetValue(previewValue)
-	m.autoComplete.CursorEnd()
+	m.positionCursorForCompletion(previewValue, item)
 }
 
 func (m *Model) handleIntent(intent intents.Intent) tea.Cmd {
@@ -474,6 +474,17 @@ func (m *Model) applyCompletion(input string, item CompletionItem) string {
 		return input[:lastTokenIndex] + item.Name
 	}
 	return item.Name
+}
+
+// positionCursorForCompletion places the cursor inside "()" for parameterless functions,
+// otherwise at the end.
+func (m *Model) positionCursorForCompletion(value string, item CompletionItem) {
+	if item.Kind == KindFunction && !item.HasParameters {
+		// Place cursor between ( and )
+		m.autoComplete.SetCursor(len(value) - 1)
+	} else {
+		m.autoComplete.CursorEnd()
+	}
 }
 
 // getHistoryIndices returns the indices of history items in completionItems

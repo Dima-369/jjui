@@ -26,10 +26,15 @@ type Item struct {
 	HasParameters bool
 }
 
-// DisplayName returns the item name, appending "()" for parameterless functions.
+// DisplayName returns the item name with appropriate parentheses:
+// - parameterless functions get "()" appended
+// - functions with parameters get "(" appended
 func (i Item) DisplayName() string {
 	if i.Kind == KindFunction && !i.HasParameters {
 		return i.Name + "()"
+	}
+	if i.Kind == KindFunction && i.HasParameters {
+		return i.Name + "("
 	}
 	return i.Name
 }

@@ -25,6 +25,7 @@ type CompletionItem struct {
 	Kind          CompletionKind
 	MatchedPart   string
 	RestPart      string
+	HasParameters bool
 }
 
 type CompletionProvider struct {
@@ -109,6 +110,7 @@ func (p *CompletionProvider) GetCompletionItems(input string, history []string) 
 				Kind:          si.Kind,
 				MatchedPart:   "",
 				RestPart:      name,
+				HasParameters: si.HasParameters,
 			})
 		}
 		return items
@@ -128,6 +130,7 @@ func (p *CompletionProvider) GetCompletionItems(input string, history []string) 
 				Kind:          si.Kind,
 				MatchedPart:   lastToken,
 				RestPart:      strings.TrimPrefix(name, lastToken),
+				HasParameters: si.HasParameters,
 			})
 		}
 	}
