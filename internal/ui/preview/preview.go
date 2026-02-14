@@ -186,7 +186,6 @@ func (m *Model) refreshPreviewForItem(item common.SelectedItem) tea.Cmd {
 	return common.Debounce(debounceId, debounceDuration, func() tea.Msg {
 		var args []string
 		previewWidth := strconv.Itoa(m.view.Width)
-		var summaryRevision string
 		switch sel := item.(type) {
 		case common.SelectedFile:
 			args = jj.TemplatedArgs(config.Current.Preview.FileCommand, map[string]string{
@@ -203,14 +202,12 @@ func (m *Model) refreshPreviewForItem(item common.SelectedItem) tea.Cmd {
 				jj.CommitIdPlaceholder:     sel.CommitId,
 				jj.PreviewWidthPlaceholder: previewWidth,
 			})
-			summaryRevision = sel.ChangeId
 		case common.SelectedCommit:
 			args = jj.TemplatedArgs(config.Current.Preview.EvologCommand, map[string]string{
 				jj.RevsetPlaceholder:       m.context.CurrentRevset,
 				jj.CommitIdPlaceholder:     sel.CommitId,
 				jj.PreviewWidthPlaceholder: previewWidth,
 			})
-			summaryRevision = sel.CommitId
 		case common.SelectedOperation:
 			args = jj.TemplatedArgs(config.Current.Preview.OplogCommand, map[string]string{
 				jj.RevsetPlaceholder:       m.context.CurrentRevset,
@@ -220,57 +217,10 @@ func (m *Model) refreshPreviewForItem(item common.SelectedItem) tea.Cmd {
 		}
 
 		output, _ := m.context.RunCommandImmediate(args)
-		content := string(output)
-
-		if summaryRevision != "" {
-			if summaryOutput, err := m.context.RunCommandImmediate(jj.DiffSummary(summaryRevision)); err == nil && len(summaryOutput) > 0 {
-				content = insertAfterCommitHeader(content, string(summaryOutput))
-			}
-		}
-
 		return updatePreviewContentMsg{
-			Content: content,
+			Content: string(output),
 		}
 	})
-}
-
-// insertAfterCommitHeader inserts the file summary after the commit header
-// (description) and before the diff output. The commit header ends at the first
-// blank line that precedes a diff hunk or the end of content.
-func insertAfterCommitHeader(content string, summary string) string {
-	lines := strings.Split(content, "\n")
-	// Find the first blank line — this separates the commit header from the diff.
-	for i, line := range lines {
-		if strings.TrimSpace(stripAnsi(line)) == "" && i > 0 {
-			before := strings.Join(lines[:i], "\n")
-			after := strings.Join(lines[i:], "\n")
-			return before + "\n\n" + summary + after
-		}
-	}
-	// No blank line found; append summary at the end.
-	return content + "\n\n" + summary
-}
-
-// stripAnsi removes ANSI escape sequences for blank-line detection.
-func stripAnsi(s string) string {
-	var out []byte
-	i := 0
-	for i < len(s) {
-		if s[i] == '\x1b' && i+1 < len(s) && s[i+1] == '[' {
-			j := i + 2
-			for j < len(s) && !((s[j] >= 'A' && s[j] <= 'Z') || (s[j] >= 'a' && s[j] <= 'z')) {
-				j++
-			}
-			if j < len(s) {
-				j++
-			}
-			i = j
-		} else {
-			out = append(out, s[i])
-			i++
-		}
-	}
-	return string(out)
 }
 
 func New(context *context.MainContext) *Model {
