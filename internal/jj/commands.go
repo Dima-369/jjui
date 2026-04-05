@@ -2,6 +2,8 @@ package jj
 
 import (
 	"fmt"
+	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -90,12 +92,29 @@ func Split(revision string, files []string, parallel bool, interactive bool) Com
 	if interactive {
 		args = append(args, "--interactive")
 	}
+	if !interactive && len(files) > 0 {
+		args = append(args, "-m", splitMessage(files))
+	}
 	var escapedFiles []string
 	for _, file := range files {
 		escapedFiles = append(escapedFiles, EscapeFileName(file))
 	}
 	args = append(args, escapedFiles...)
 	return args
+}
+
+func splitMessage(files []string) string {
+	seen := make(map[string]bool)
+	var names []string
+	for _, f := range files {
+		name := filepath.Base(f)
+		if !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	}
+	slices.Sort(names)
+	return strings.Join(names, ", ")
 }
 
 func Describe(revisions SelectedRevisions) CommandArgs {
