@@ -23,6 +23,7 @@ type Config struct {
 	Revisions RevisionsConfig   `toml:"revisions"`
 	Preview   PreviewConfig     `toml:"preview"`
 	OpLog     OpLogConfig       `toml:"oplog"`
+	Details   DetailsConfig     `toml:"details"`
 	Limit     int               `toml:"limit"`
 	Git       GitConfig         `toml:"git"`
 	Ssh       SshConfig         `toml:"ssh"`
@@ -176,6 +177,12 @@ func GetPreviewPosition(c *Config) (PreviewPosition, error) {
 
 type OpLogConfig struct {
 	Limit int `toml:"limit"`
+}
+
+type DetailsConfig struct {
+	SkipSplitConfirmation     bool `toml:"skip_split_confirmation"`
+	SkipRestoreConfirmation   bool `toml:"skip_restore_confirmation"`
+	SkipAbsorbConfirmation    bool `toml:"skip_absorb_confirmation"`
 }
 
 type ShowOption string
