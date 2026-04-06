@@ -159,6 +159,11 @@ limit = 0
   width_percentage = 50.0
   width_increment_percentage = 5.0
 
+[details]
+  skip_split_confirmation = false
+  skip_restore_confirmation = false
+  skip_absorb_confirmation = false
+
 [oplog]
   limit = 200
 

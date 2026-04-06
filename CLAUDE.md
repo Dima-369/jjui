@@ -64,9 +64,16 @@ Most UI models render via the immediate view system instead of returning strings
 - `row.go` - Parsed row structures with commit info and graph segments
 
 **`internal/config/`** - Configuration management:
-- `config.go` - Main config struct with UI, keybindings, and revset settings
+- `config.go` - Main config struct with UI, keybindings, revset settings, and details confirmation skip options
 - `keys.go` - Key binding definitions and mapping
 - `loader.go` - TOML configuration file loading
+
+### Configuration Options
+
+The `[details]` section in the config file supports the following options:
+- `skip_split_confirmation` - Skip the "Are you sure you want to split?" prompt (default: `false`)
+- `skip_restore_confirmation` - Skip the "Are you sure you want to restore?" prompt (default: `false`)
+- `skip_absorb_confirmation` - Skip the "Are you sure you want to absorb?" prompt (default: `false`)
 
 ### Component Communication
 
