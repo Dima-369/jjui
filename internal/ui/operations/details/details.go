@@ -202,7 +202,7 @@ func (s *Operation) handleIntent(intent intents.Intent) tea.Cmd {
 	case intents.DetailsSplit:
 		selectedFiles := s.getSelectedFiles(true)
 		if config.Current.Details.SkipSplitConfirmation {
-			return s.context.RunInteractiveCommand(jj.Split(s.revision.GetChangeId(), selectedFiles, intent.IsParallel, false), common.Refresh)
+			return tea.Batch(s.context.RunInteractiveCommand(jj.Split(s.revision.GetChangeId(), selectedFiles, intent.IsParallel, false), common.Refresh), common.Close)
 		}
 		s.selectedHint = "stays as is"
 		s.unselectedHint = "moves to the new revision"
@@ -231,7 +231,7 @@ func (s *Operation) handleIntent(intent intents.Intent) tea.Cmd {
 	case intents.DetailsRestore:
 		selectedFiles := s.getSelectedFiles(true)
 		if config.Current.Details.SkipRestoreConfirmation {
-			return s.context.RunCommand(jj.Restore(s.revision.GetChangeId(), selectedFiles, false), common.Refresh)
+			return tea.Batch(s.context.RunCommand(jj.Restore(s.revision.GetChangeId(), selectedFiles, false), common.Refresh), common.Close)
 		}
 		s.selectedHint = "gets restored"
 		s.unselectedHint = "stays as is"
@@ -253,7 +253,7 @@ func (s *Operation) handleIntent(intent intents.Intent) tea.Cmd {
 	case intents.DetailsAbsorb:
 		selectedFiles := s.getSelectedFiles(true)
 		if config.Current.Details.SkipAbsorbConfirmation {
-			return s.context.RunCommand(jj.Absorb(s.revision.GetChangeId(), selectedFiles...), common.Refresh)
+			return tea.Batch(s.context.RunCommand(jj.Absorb(s.revision.GetChangeId(), selectedFiles...), common.Refresh), common.Close)
 		}
 		s.selectedHint = "might get absorbed into parents"
 		s.unselectedHint = "stays as is"
