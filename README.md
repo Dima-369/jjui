@@ -1,3 +1,13 @@
+# My install instructions
+
+```bash
+export GOPATH=/Users/dima/Developer/go && \
+      go build -o jjui ./cmd/jjui && \
+      mv ./jjui ~/.go/bin/
+```
+
+# Original README
+
 [![Build & Test](https://github.com/idursun/jjui/actions/workflows/go.yml/badge.svg)](https://github.com/idursun/jjui/actions/workflows/go.yml)
 
 # Jujutsu UI
